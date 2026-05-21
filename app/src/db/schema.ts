@@ -15,19 +15,19 @@ export const testsTable = pgTable("tests", {
 export const questionsTable = pgTable("questions", {
     id: integer().primaryKey().generatedAlwaysAsIdentity(),
     title: varchar( { length: 150 }).notNull(),
-    active: boolean().notNull(),
+    active: boolean().notNull().default(true),
 });
 
 export const alternativesTable = pgTable("alternatives", {
     id: integer().primaryKey().generatedAlwaysAsIdentity(),
     description: varchar( { length: 150 }).notNull(),
     idQuestion: integer().references(() => questionsTable.id),
-    points: integer().notNull(),
+    passes: integer().notNull(),
 });
 
 export const answersTable = pgTable("answers", {
     id: integer().primaryKey().generatedAlwaysAsIdentity(),
     idAlternative: integer().notNull().references(() => alternativesTable.id),
     idTest: integer().notNull().references(() => testsTable.id),
-    passed: boolean().notNull(),
+    points: boolean().notNull(),
 });

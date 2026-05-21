@@ -2,10 +2,14 @@ import  "dotenv/config"
 import { drizzle } from "drizzle-orm/neon-http";
 import { usersTable } from "../db/schema";
 
-const db = drizzle(process.env.DATABASE_URL!);
+const db = drizzle({connection: process.env.DATABASE_URL!, casing: "snake_case"});
 
-export async function getUsers() {
-    return await db.select().from(usersTable);
+export async function getTableRows(table: any) {
+    return await db.select().from(table)
 }
 
-console.log(await getUsers());
+export async function insertIntoTable(table: any, ...values: any[]) {
+    return await db.insert(table).values(values)
+}
+
+console.log(getTableRows(usersTable))
