@@ -14,6 +14,7 @@ import {
   Plus,
   Users,
 } from "@phosphor-icons/react/dist/ssr";
+import JoinLockToggle from "../components/JoinLockToggle";
 
 const stats = [
   { label: "Questions", value: "10", icon: ChartBar },
@@ -43,6 +44,13 @@ export default function Home() {
   }, []);
 
   const canStart = joinPin.trim() === pin;
+
+  useEffect(() => {
+    if (canStart) {
+      // navigate to quiz when PIN matches
+      window.location.href = "/questions";
+    }
+  }, [canStart]);
 
   return (
     <main className="min-h-screen bg-[#f7f7fb] text-slate-950">
@@ -168,13 +176,21 @@ export default function Home() {
                   </p>
                 </div>
                 <span
-                  className={`rounded-md px-3 py-1 text-sm font-black ${
+                  className={`rounded-md px-3 py-1 text-sm font-black flex items-center justify-center ${
                     canStart
                       ? "bg-[#0f9f6e] text-white"
                       : "bg-[#ffbf00] text-slate-950"
                   }`}
                 >
-                  {canStart ? "Unlocked" : "Locked"}
+                  <JoinLockToggle
+                    initialLocked={!canStart}
+                    size={18}
+                    onChange={(locked: boolean) => {
+
+
+                      setJoinPin(locked ? '' : pin);
+                    }}
+                  />
                 </span>
               </div>
 
