@@ -16,6 +16,7 @@ const answerColors = [
   "bg-emerald-500",
 ];
 const answerLabels = ["A", "B", "C", "D"];
+const QUESTION_TIME_SECONDS = 20;
 
 function shuffleItems<T>(items: T[]): T[] {
   const shuffled = [...items];
@@ -88,7 +89,7 @@ function quizReducer(
     return {
       questionIndex: state.questionIndex + 1,
       countdown: 5,
-      timeLeft: 4,
+      timeLeft: QUESTION_TIME_SECONDS,
       selectedAnswer: null,
       submittedAnswer: null,
       score: state.score,
@@ -335,7 +336,7 @@ export function KahootQuestion({
     {
       questionIndex: 0,
       countdown: 3,
-      timeLeft: 4,
+      timeLeft: QUESTION_TIME_SECONDS,
       selectedAnswer: null,
       submittedAnswer: null,
       score: 0,
