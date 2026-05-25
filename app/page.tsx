@@ -1,26 +1,27 @@
 "use client";
 
+
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
-  ChartBar,
-  CheckCircle,
-  Clock,
-  GameController,
-  SignIn,
-  UserPlus,
-  LockKey,
-  Play,
-  Plus,
-  Users,
-} from "@phosphor-icons/react/dist/ssr";
+  IconChartBar,
+  IconCircleCheck,
+  IconClock,
+  IconDeviceGamepad2,
+  IconLogin2,
+  IconUserPlus,
+  IconLock,
+  IconPlayerPlayFilled,
+  IconPlus,
+  IconUsers,
+} from "@tabler/icons-react";
 import JoinLockToggle from "../components/JoinLockToggle";
 
 const stats = [
-  { label: "Questions", value: "10", icon: ChartBar },
-  { label: "Players", value: "0", icon: Users },
-  { label: "Time", value: "20s", icon: Clock },
-  { label: "Status", value: "Ready", icon: CheckCircle },
+  { label: "Questions", value: "10", icon: IconChartBar },
+  { label: "Players", value: "0", icon: IconUsers },
+  { label: "Time", value: "20s", icon: IconClock },
+  { label: "Status", value: "Ready", icon: IconCircleCheck },
 ];
 
 function createPin() {
@@ -30,8 +31,11 @@ function createPin() {
 export default function Home() {
   const [pin, setPin] = useState("438921");
   const [joinPin, setJoinPin] = useState("");
+  const [isRouterReady, setIsRouterReady] =  useState(false);
 
   useEffect(() => {
+    setIsRouterReady(true);
+
     const refreshPin = () => {
       setPin(createPin());
       setJoinPin("");
@@ -45,20 +49,13 @@ export default function Home() {
 
   const canStart = joinPin.trim() === pin;
 
-  useEffect(() => {
-    if (canStart) {
-      // navigate to quiz when PIN matches
-      window.location.href = "/questions";
-    }
-  }, [canStart]);
-
   return (
     <main className="min-h-screen bg-[#f7f7fb] text-slate-950">
       <section className="mx-auto flex min-h-screen w-full max-w-7xl flex-col px-4 py-5 sm:px-6 lg:px-8">
         <header className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <div className="grid size-11 place-items-center rounded-lg bg-[#4f2bd8] text-white shadow-sm">
-              <GameController size={26} weight="fill" />
+              <IconDeviceGamepad2 size={26} strokeWidth={2.5} />
             </div>
             <div>
               <p className="text-sm font-black uppercase text-[#4f2bd8]">
@@ -73,40 +70,40 @@ export default function Home() {
           <div className="flex items-center gap-2">
             <Link
               href="/sign-in"
-              className="grid size-11 place-items-center rounded-md border border-slate-200 bg-white text-slate-700 shadow-sm transition hover:bg-slate-50"
+              className="grid size-11 cursor-pointer place-items-center rounded-md border border-slate-200 bg-white text-slate-700 shadow-sm transition hover:bg-slate-50"
               aria-label="Sign in"
               title="Sign in"
             >
-              <SignIn size={20} weight="bold" />
+              <IconLogin2 size={20} strokeWidth={2.5} />
             </Link>
             <Link
               href="/create-account"
-              className="grid size-11 place-items-center rounded-md border border-slate-200 bg-white text-slate-700 shadow-sm transition hover:bg-slate-50"
+              className="grid size-11 cursor-pointer place-items-center rounded-md border border-slate-200 bg-white text-slate-700 shadow-sm transition hover:bg-slate-50"
               aria-label="Create account"
               title="Create account"
             >
-              <UserPlus size={20} weight="bold" />
+              <IconUserPlus size={20} strokeWidth={2.5} />
             </Link>
-            <button className="inline-flex h-11 items-center gap-2 rounded-md border border-slate-200 bg-white px-4 text-sm font-black shadow-sm transition hover:bg-slate-50">
-              <Plus size={18} weight="bold" />
+            <button className="inline-flex h-11 cursor-pointer items-center gap-2 rounded-md border border-slate-200 bg-white px-4 text-sm font-black shadow-sm transition hover:bg-slate-50">
+              <IconPlus size={18} strokeWidth={2.5} />
               New quiz
             </button>
             <Link
-              href="/questions"
-              className="inline-flex h-11 items-center gap-2 rounded-md bg-slate-950 px-5 text-sm font-black text-white shadow-sm transition hover:bg-slate-800"
+              href={`/questions?pin=${pin}`}
+              className="inline-flex h-11 cursor-pointer items-center gap-2 rounded-md bg-slate-950 px-5 text-sm font-black text-white shadow-sm transition hover:bg-slate-800"
             >
-              <Play size={18} weight="fill" />
+              <IconPlayerPlayFilled size={18} />
               Preview
             </Link>
           </div>
         </header>
 
         <div className="grid flex-1 gap-5 py-6 lg:grid-cols-[1.15fr_0.85fr]">
-          <section className="flex min-h-[520px] flex-col justify-between rounded-lg bg-[#4f2bd8] p-5 text-white shadow-xl sm:p-7">
+          <section className="flex min-h-130 flex-col justify-between rounded-lg bg-[#4f2bd8] p-5 text-white shadow-xl sm:p-7">
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
                 <p className="mb-2 inline-flex items-center gap-2 rounded-md bg-white/15 px-3 py-1 text-sm font-black">
-                  <LockKey size={16} weight="bold" />
+                  <IconLock size={16} strokeWidth={2.5} />
                   Waiting room
                 </p>
                 <h2 className="max-w-2xl text-4xl font-black leading-[1.02] sm:text-6xl">
@@ -155,7 +152,7 @@ export default function Home() {
                   >
                     <Icon
                       size={23}
-                      weight="bold"
+                      strokeWidth={2.5}
                       className="mb-4 text-[#0f9f6e]"
                     />
                     <p className="text-3xl font-black">{item.value}</p>
@@ -186,9 +183,7 @@ export default function Home() {
                     initialLocked={!canStart}
                     size={18}
                     onChange={(locked: boolean) => {
-
-
-                      setJoinPin(locked ? '' : pin);
+                      setJoinPin(locked ? "" : pin);
                     }}
                   />
                 </span>
@@ -206,13 +201,24 @@ export default function Home() {
                       : "border-slate-200 bg-slate-50 text-slate-950 focus:border-[#4f2bd8] focus:bg-white"
                   }`}
                 />
-                <button
-                  disabled={!canStart}
-                  className="inline-flex h-12 items-center justify-center gap-2 rounded-md bg-[#e21b3c] px-4 font-black text-white shadow-sm transition hover:bg-[#c91533] disabled:cursor-not-allowed disabled:bg-slate-300"
+                <Link
+                  href={`/questions?pin=${pin}`}
+                  aria-disabled={!canStart || !isRouterReady}
+                  prefetch={false}
+                  onNavigate={(event) => {
+                    if (!canStart || !isRouterReady) {
+                      event.preventDefault();
+                    }
+                  }}
+                  className={`inline-flex h-12 items-center justify-center gap-2 rounded-md px-4 font-black text-white shadow-sm transition ${
+                    canStart && isRouterReady
+                      ? "cursor-pointer bg-[#e21b3c] hover:bg-[#c91533]"
+                      : "cursor-not-allowed bg-slate-300"
+                  }`}
                 >
-                  <Play size={18} weight="fill" />
+                  <IconPlayerPlayFilled size={18} />
                   {canStart ? "Start test" : "Locked"}
-                </button>
+                </Link>
               </div>
             </section>
           </aside>

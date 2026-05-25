@@ -1,9 +1,9 @@
 import Link from "next/link";
 import {
-  ArrowLeft,
-  GameController,
-  UserPlus,
-} from "@phosphor-icons/react/dist/ssr";
+  IconArrowLeft,
+  IconDeviceGamepad2,
+  IconUserPlus,
+} from "@tabler/icons-react";
 
 export default function CreateAccountPage() {
   return (
@@ -13,13 +13,13 @@ export default function CreateAccountPage() {
           href="/"
           className="mb-6 inline-flex items-center gap-2 text-sm font-black text-slate-500 transition hover:text-slate-950"
         >
-          <ArrowLeft size={18} weight="bold" />
+          <IconArrowLeft size={18} strokeWidth={2.5} />
           Dashboard
         </Link>
 
         <div className="mb-7 flex items-center gap-3">
           <div className="grid size-12 place-items-center rounded-lg bg-[#4f2bd8] text-white">
-            <GameController size={27} weight="fill" />
+            <IconDeviceGamepad2 size={27} strokeWidth={2.5} />
           </div>
           <div>
             <p className="text-sm font-black uppercase text-[#4f2bd8]">
@@ -49,7 +49,7 @@ export default function CreateAccountPage() {
           </label>
 
           <button className="mt-2 inline-flex h-12 items-center justify-center gap-2 rounded-md bg-[#e21b3c] px-4 font-black text-white transition hover:bg-[#c91533]">
-            <UserPlus size={18} weight="bold" />
+            <IconUserPlus size={18} strokeWidth={2.5} />
             Create account
           </button>
         </form>

@@ -1,5 +1,9 @@
 import Link from "next/link";
-import { ArrowLeft, GameController, SignIn } from "@phosphor-icons/react/dist/ssr";
+import {
+  IconArrowLeft,
+  IconDeviceGamepad2,
+  IconLogin2,
+} from "@tabler/icons-react";
 
 export default function SignInPage() {
   return (
@@ -9,13 +13,13 @@ export default function SignInPage() {
           href="/"
           className="mb-6 inline-flex items-center gap-2 text-sm font-black text-slate-500 transition hover:text-slate-950"
         >
-          <ArrowLeft size={18} weight="bold" />
+          <IconArrowLeft size={18} strokeWidth={2.5} />
           Dashboard
         </Link>
 
         <div className="mb-7 flex items-center gap-3">
           <div className="grid size-12 place-items-center rounded-lg bg-[#4f2bd8] text-white">
-            <GameController size={27} weight="fill" />
+            <IconDeviceGamepad2 size={27} strokeWidth={2.5} />
           </div>
           <div>
             <p className="text-sm font-black uppercase text-[#4f2bd8]">
@@ -46,7 +50,7 @@ export default function SignInPage() {
           </label>
 
           <button className="mt-2 inline-flex h-12 items-center justify-center gap-2 rounded-md bg-slate-950 px-4 font-black text-white transition hover:bg-slate-800">
-            <SignIn size={18} weight="bold" />
+            <IconLogin2 size={18} strokeWidth={2.5} />
             Enter room
           </button>
         </form>
