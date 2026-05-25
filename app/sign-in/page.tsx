@@ -16,38 +16,64 @@ function firstError(errors?: string[]) {
   return errors?.[0] ?? "";
 }
 
+function mapSignInErrors(
+  errors: Partial<Record<keyof SignInInput, string[]>> = {},
+): SignInErrors {
+  return {
+    name: firstError(errors.name),
+    password: firstError(errors.password),
+    adminCode: firstError(errors.adminCode),
+  };
+}
+
 export default function SignInPage() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [adminCode, setAdminCode] = useState("");
   const [formErrors, setFormErrors] = useState<SignInErrors>({});
   const [formMessage, setFormMessage] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
-
-    const result = signInSchema.safeParse({
+    const payload = {
       name: formData.get("name"),
-      gamePin: formData.get("gamePin"),
+      password: formData.get("password"),
       isAdmin,
       adminCode,
-    });
+    };
+
+    const result = signInSchema.safeParse(payload);
 
     if (!result.success) {
-      const errors = result.error.flatten().fieldErrors;
-      setFormErrors({
-        name: firstError(errors.name),
-        gamePin: firstError(errors.gamePin),
-        adminCode: firstError(errors.adminCode),
-      });
+      setFormErrors(mapSignInErrors(result.error.flatten().fieldErrors));
       setFormMessage("");
       return;
     }
 
-    setFormErrors({});
-    setFormMessage(
-      result.data.isAdmin ? "Admin sign-in validated." : "Sign-in validated.",
-    );
+    setIsSubmitting(true);
+
+    try {
+      const response = await fetch("/api/sign-in", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(result.data),
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        setFormErrors(mapSignInErrors(data.errors));
+        setFormMessage(data.message ?? "Could not sign in.");
+        return;
+      }
+
+      setFormErrors({});
+      setFormMessage(data.message ?? "Signed in.");
+    } catch {
+      setFormMessage("Could not sign in.");
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   return (
@@ -95,22 +121,21 @@ export default function SignInPage() {
           </label>
 
           <label className="grid gap-2 text-sm font-black">
-            Game PIN
+            Password
             <input
-              name="gamePin"
-              type="text"
-              inputMode="numeric"
-              placeholder="438921"
-              aria-invalid={formErrors.gamePin ? "true" : "false"}
-              className={`h-12 rounded-md border bg-slate-50 px-4 font-mono text-base font-semibold tracking-wide outline-none transition focus:bg-white ${
-                formErrors.gamePin
+              name="password"
+              type="password"
+              placeholder="Your password"
+              aria-invalid={formErrors.password ? "true" : "false"}
+              className={`h-12 rounded-md border bg-slate-50 px-4 text-base font-semibold outline-none transition focus:bg-white ${
+                formErrors.password
                   ? "border-[#e21b3c] focus:border-[#e21b3c]"
                   : "border-slate-200 focus:border-[#4f2bd8]"
               }`}
             />
-            {formErrors.gamePin ? (
+            {formErrors.password ? (
               <span className="text-sm font-bold text-[#e21b3c]">
-                {formErrors.gamePin}
+                {formErrors.password}
               </span>
             ) : null}
           </label>
@@ -173,9 +198,12 @@ export default function SignInPage() {
             </p>
           ) : null}
 
-          <button className="mt-2 inline-flex h-12 items-center justify-center gap-2 rounded-md bg-slate-950 px-4 font-black text-white transition hover:bg-slate-800">
+          <button
+            disabled={isSubmitting}
+            className="mt-2 inline-flex h-12 items-center justify-center gap-2 rounded-md bg-slate-950 px-4 font-black text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-300"
+          >
             <IconLogin2 size={18} strokeWidth={2.5} />
-            Enter room
+            {isSubmitting ? "Signing in..." : "Enter room"}
           </button>
         </form>
 
