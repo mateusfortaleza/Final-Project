@@ -24,6 +24,7 @@ export const createAccountSchema = z
   .object({
     name: z.string().trim().min(2, "Name must be at least 2 characters."),
     email: z.string().trim().email("Enter a valid email address."),
+    password: z.string().min(6, "Password must be at least 6 characters."),
     ...adminFields,
   })
   .superRefine(validateAdminCode);
@@ -31,7 +32,7 @@ export const createAccountSchema = z
 export const signInSchema = z
   .object({
     name: z.string().trim().min(2, "Name must be at least 2 characters."),
-    gamePin: z.string().trim().regex(/^\d{6}$/, "Game PIN must be 6 digits."),
+    password: z.string().min(1, "Password is required."),
     ...adminFields,
   })
   .superRefine(validateAdminCode);

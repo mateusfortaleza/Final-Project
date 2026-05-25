@@ -29,6 +29,13 @@
       "when": 1779750598391,
       "tag": "0003_tranquil_impossible_man",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1779751200000,
+      "tag": "0004_add_user_password",
+      "breakpoints": true
     }
   ]
 }

@@ -19,40 +19,69 @@ function firstError(errors?: string[]) {
   return errors?.[0] ?? "";
 }
 
+function mapCreateAccountErrors(
+  errors: Partial<Record<keyof CreateAccountInput, string[]>> = {},
+): CreateAccountErrors {
+  return {
+    name: firstError(errors.name),
+    email: firstError(errors.email),
+    password: firstError(errors.password),
+    adminCode: firstError(errors.adminCode),
+  };
+}
+
 export default function CreateAccountPage() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [adminCode, setAdminCode] = useState("");
   const [formErrors, setFormErrors] = useState<CreateAccountErrors>({});
   const [formMessage, setFormMessage] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
-
-    const result = createAccountSchema.safeParse({
+    const payload = {
       name: formData.get("name"),
       email: formData.get("email"),
+      password: formData.get("password"),
       isAdmin,
       adminCode,
-    });
+    };
+
+    const result = createAccountSchema.safeParse(payload);
 
     if (!result.success) {
-      const errors = result.error.flatten().fieldErrors;
-      setFormErrors({
-        name: firstError(errors.name),
-        email: firstError(errors.email),
-        adminCode: firstError(errors.adminCode),
-      });
+      setFormErrors(mapCreateAccountErrors(result.error.flatten().fieldErrors));
       setFormMessage("");
       return;
     }
 
-    setFormErrors({});
-    setFormMessage(
-      result.data.isAdmin
-        ? "Admin account details validated."
-        : "Account details validated.",
-    );
+    setIsSubmitting(true);
+
+    try {
+      const response = await fetch("/api/create-account", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(result.data),
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        setFormErrors(mapCreateAccountErrors(data.errors));
+        setFormMessage(data.message ?? "Could not create account.");
+        return;
+      }
+
+      event.currentTarget.reset();
+      setIsAdmin(false);
+      setAdminCode("");
+      setFormErrors({});
+      setFormMessage(data.message ?? "Account created.");
+    } catch {
+      setFormMessage("Could not create account.");
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   return (
@@ -95,6 +124,26 @@ export default function CreateAccountPage() {
             {formErrors.name ? (
               <span className="text-sm font-bold text-[#e21b3c]">
                 {formErrors.name}
+              </span>
+            ) : null}
+          </label>
+
+          <label className="grid gap-2 text-sm font-black">
+            Password
+            <input
+              name="password"
+              type="password"
+              placeholder="Create a password"
+              aria-invalid={formErrors.password ? "true" : "false"}
+              className={`h-12 rounded-md border bg-slate-50 px-4 text-base font-semibold outline-none transition focus:bg-white ${
+                formErrors.password
+                  ? "border-[#e21b3c] focus:border-[#e21b3c]"
+                  : "border-slate-200 focus:border-[#4f2bd8]"
+              }`}
+            />
+            {formErrors.password ? (
+              <span className="text-sm font-bold text-[#e21b3c]">
+                {formErrors.password}
               </span>
             ) : null}
           </label>
@@ -177,9 +226,12 @@ export default function CreateAccountPage() {
             </p>
           ) : null}
 
-          <button className="mt-2 inline-flex h-12 items-center justify-center gap-2 rounded-md bg-[#e21b3c] px-4 font-black text-white transition hover:bg-[#c91533]">
+          <button
+            disabled={isSubmitting}
+            className="mt-2 inline-flex h-12 items-center justify-center gap-2 rounded-md bg-[#e21b3c] px-4 font-black text-white transition hover:bg-[#c91533] disabled:cursor-not-allowed disabled:bg-slate-300"
+          >
             <IconUserPlus size={18} strokeWidth={2.5} />
-            Create account
+            {isSubmitting ? "Creating..." : "Create account"}
           </button>
         </form>
 
