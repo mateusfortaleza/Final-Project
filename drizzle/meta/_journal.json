@@ -22,6 +22,13 @@
       "when": 1779323236721,
       "tag": "0002_snake_case_columns",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1779750598391,
+      "tag": "0003_tranquil_impossible_man",
+      "breakpoints": true
     }
   ]
 }

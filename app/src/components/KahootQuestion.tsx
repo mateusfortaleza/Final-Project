@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useReducer } from "react";
+import { useEffect, useMemo, useReducer } from "react";
 import type {
   Answer,
   Question,
@@ -17,17 +17,33 @@ const answerColors = [
 ];
 const answerLabels = ["A", "B", "C", "D"];
 
+function shuffleItems<T>(items: T[]): T[] {
+  const shuffled = [...items];
+
+  for (let index = shuffled.length - 1; index > 0; index -= 1) {
+    const randomIndex = Math.floor(Math.random() * (index + 1));
+    [shuffled[index], shuffled[randomIndex]] = [
+      shuffled[randomIndex],
+      shuffled[index],
+    ];
+  }
+
+  return shuffled;
+}
+
 function mapQuizQuestions(quizQuestions: QuizQuestion[]): Question[] {
-  return quizQuestions.map((question) => ({
+  return shuffleItems(quizQuestions).map((question) => ({
     id: question.id,
     title: question.title,
-    answers: question.alternatives.map((alternative, index) => ({
-      id: alternative.id,
-      label: answerLabels[index] ?? String(index + 1),
-      text: alternative.description,
-      color: answerColors[index] ?? "bg-slate-500",
-      isCorrect: alternative.isCorrect,
-    })),
+    answers: shuffleItems(question.alternatives).map(
+      (alternative, index) => ({
+        id: alternative.id,
+        label: answerLabels[index] ?? String(index + 1),
+        text: alternative.description,
+        color: answerColors[index] ?? "bg-slate-500",
+        isCorrect: alternative.isCorrect,
+      }),
+    ),
   }));
 }
 
@@ -72,9 +88,10 @@ function quizReducer(
     return {
       questionIndex: state.questionIndex + 1,
       countdown: 5,
-      timeLeft: 20,
+      timeLeft: 4,
       selectedAnswer: null,
       submittedAnswer: null,
+      score: state.score,
       revealResult: false,
       isComplete: false,
     };
@@ -95,11 +112,14 @@ function quizReducer(
     };
   }
 
+  const submittedAnswer = state.selectedAnswer;
+
   return {
     ...state,
     timeLeft: 0,
     selectedAnswer: null,
-    submittedAnswer: state.selectedAnswer,
+    submittedAnswer,
+    score: state.score + (submittedAnswer?.isCorrect ? 1 : 0),
     revealResult: true,
   };
 }
@@ -147,11 +167,13 @@ export function QuestionCard({
 
 export function AnswerGrid({
   answers,
+  selectedAnswer,
   submittedAnswer,
   revealResult,
   onSelect,
 }: {
   answers: Answer[];
+  selectedAnswer: Answer | null;
   submittedAnswer: Answer | null;
   revealResult: boolean;
   onSelect: (answer: Answer) => void;
@@ -159,27 +181,34 @@ export function AnswerGrid({
   return (
     <section className="grid w-full grid-cols-1 gap-3 p-4 md:grid-cols-2 md:p-6">
       {answers.map((answer) => {
+        const isSelected = selectedAnswer?.id === answer.id;
         const isSubmitted = submittedAnswer?.id === answer.id;
+        const isUnanswered = revealResult && submittedAnswer === null;
+        const shouldShowCorrectAnswer =
+          revealResult && answer.isCorrect && (isSubmitted || isUnanswered);
         const resultClass =
-          revealResult && isSubmitted && answer.isCorrect
+          shouldShowCorrectAnswer
             ? "ring-4 ring-white"
             : revealResult && isSubmitted
               ? "opacity-80 ring-4 ring-black/40"
               : "";
+        const selectedClass =
+          isSelected && !revealResult ? "scale-[1.01] ring-4 ring-white/90" : "";
 
         return (
           <button
             key={answer.id}
             type="button"
             onClick={() => onSelect(answer)}
-            className={`${answer.color} ${resultClass} flex min-h-28 cursor-pointer items-center gap-4 rounded-lg p-5 text-left text-white shadow-lg transition hover:scale-[1.01] active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-white/70`}
+            aria-pressed={isSelected}
+            className={`${answer.color} ${resultClass} ${selectedClass} flex min-h-28 cursor-pointer items-center gap-4 rounded-lg p-5 text-left text-white shadow-lg transition hover:scale-[1.01] active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-white/70`}
           >
             <span className="grid size-12 shrink-0 place-items-center rounded-md bg-black/20 text-2xl font-black">
               {answer.label}
             </span>
             <span className="flex flex-1 items-center justify-between gap-3 text-2xl font-black">
               <span>{answer.text}</span>
-              {isSubmitted && revealResult ? (
+              {(isSubmitted || shouldShowCorrectAnswer) && revealResult ? (
                 <span className="rounded-md bg-black/25 px-3 py-1 text-base">
                   {answer.isCorrect ? "Correct" : "Incorrect"}
                 </span>
@@ -188,6 +217,59 @@ export function AnswerGrid({
           </button>
         );
       })}
+    </section>
+  );
+}
+
+function SplitFlapText({ value }: { value: string }) {
+  return (
+    <span className="split-flap-text" aria-label={value}>
+      {value.split("").map((character, index) => (
+        <span
+          className="split-flap-tile"
+          key={`${character}-${index}`}
+          style={{ animationDelay: `${index * 70}ms` }}
+        >
+          {character === " " ? "\u00a0" : character}
+        </span>
+      ))}
+    </span>
+  );
+}
+
+function CompletionScoreHero({
+  score,
+  questionsLength,
+}: {
+  score: number;
+  questionsLength: number;
+}) {
+  const missed = Math.max(questionsLength - score, 0);
+  const percentage =
+    questionsLength > 0 ? Math.round((score / questionsLength) * 100) : 0;
+
+  return (
+    <section className="quiz-score-hero mx-auto w-full max-w-5xl px-4 pb-8">
+      <div className="split-flap-panel rounded-lg border border-white/10 bg-zinc-950 p-4 shadow-2xl md:p-6">
+        <div className="mb-4 flex items-center justify-between gap-4 border-b border-white/10 pb-3 text-xs font-black uppercase tracking-[0.24em] text-amber-300">
+          <span>Final score</span>
+          <span>{percentage}%</span>
+        </div>
+        <div className="grid gap-3">
+          <div className="split-flap-row">
+            <span className="split-flap-label">Score</span>
+            <SplitFlapText value={`${score}/${questionsLength}`} />
+          </div>
+          <div className="split-flap-row">
+            <span className="split-flap-label">Correct</span>
+            <SplitFlapText value={String(score).padStart(2, "0")} />
+          </div>
+          <div className="split-flap-row">
+            <span className="split-flap-label">Missed</span>
+            <SplitFlapText value={String(missed).padStart(2, "0")} />
+          </div>
+        </div>
+      </div>
     </section>
   );
 }
@@ -231,13 +313,18 @@ export function KahootQuestion({
   pin: string;
   questions: QuizQuestion[];
 }) {
-  const questions = mapQuizQuestions(quizQuestions);
+  const questions = useMemo(
+    () => mapQuizQuestions(quizQuestions),
+    [quizQuestions],
+  );
   const [
     {
       questionIndex,
       countdown,
       timeLeft,
+      selectedAnswer,
       submittedAnswer,
+      score,
       revealResult,
       isComplete,
     },
@@ -248,9 +335,10 @@ export function KahootQuestion({
     {
       questionIndex: 0,
       countdown: 3,
-      timeLeft: 20,
+      timeLeft: 4,
       selectedAnswer: null,
       submittedAnswer: null,
+      score: 0,
       revealResult: false,
       isComplete: false,
     },
@@ -311,13 +399,22 @@ export function KahootQuestion({
     return (
       <main className="flex min-h-screen flex-col bg-violet-700">
         <GameHeader pin={pin} />
-        <section className="mx-auto flex w-full max-w-5xl flex-1 flex-col justify-center px-4 py-6">
+        <section className="mx-auto flex w-full max-w-5xl flex-col justify-center px-4 py-6">
           <div className="rounded-lg bg-white p-6 text-center shadow-xl">
             <h1 className="text-4xl font-black text-slate-950 md:text-6xl">
               Quiz complete
             </h1>
           </div>
         </section>
+        <CompletionScoreHero score={score} questionsLength={questions.length} />
+        <div className="mx-auto w-full max-w-5xl px-4 pb-8">
+          <a
+            href="/"
+            className="inline-flex h-12 items-center justify-center rounded-md bg-white px-6 text-base font-black text-violet-700 shadow-lg transition hover:bg-violet-50 focus:outline-none focus:ring-4 focus:ring-white/50"
+          >
+            Back to homepage
+          </a>
+        </div>
       </main>
     );
   }
@@ -339,6 +436,7 @@ export function KahootQuestion({
       />
       <AnswerGrid
         answers={currentQuestion.answers}
+        selectedAnswer={selectedAnswer}
         submittedAnswer={submittedAnswer}
         revealResult={revealResult}
         onSelect={(answer) => dispatch({ type: "select", answer })}

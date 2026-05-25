@@ -1,6 +1,5 @@
 "use client";
 
-
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
@@ -13,13 +12,11 @@ import {
   IconLock,
   IconPlayerPlayFilled,
   IconPlus,
-  IconUsers,
 } from "@tabler/icons-react";
 import JoinLockToggle from "../components/JoinLockToggle";
 
 const stats = [
   { label: "Questions", value: "10", icon: IconChartBar },
-  { label: "Players", value: "0", icon: IconUsers },
   { label: "Time", value: "20s", icon: IconClock },
   { label: "Status", value: "Ready", icon: IconCircleCheck },
 ];

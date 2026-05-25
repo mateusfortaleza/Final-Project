@@ -30,6 +30,7 @@ export type QuizState = {
   timeLeft: number;
   selectedAnswer: Answer | null;
   submittedAnswer: Answer | null;
+  score: number;
   revealResult: boolean;
   isComplete: boolean;
 };
