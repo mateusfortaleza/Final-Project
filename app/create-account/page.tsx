@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   IconArrowLeft,
   IconDeviceGamepad2,
@@ -31,6 +32,7 @@ function mapCreateAccountErrors(
 }
 
 export default function CreateAccountPage() {
+  const router = useRouter();
   const [isAdmin, setIsAdmin] = useState(false);
   const [adminCode, setAdminCode] = useState("");
   const [formErrors, setFormErrors] = useState<CreateAccountErrors>({});
@@ -77,6 +79,7 @@ export default function CreateAccountPage() {
       setAdminCode("");
       setFormErrors({});
       setFormMessage(data.message ?? "Account created.");
+      router.push("/");
     } catch {
       setFormMessage("Could not create account.");
     } finally {
